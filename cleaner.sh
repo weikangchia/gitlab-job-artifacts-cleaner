@@ -3,18 +3,14 @@
 source ./progress_bar.sh
 
 main() {
-  while getopts p:f:t:s: flag; do
-    case "${flag}" in
-    p) project=${OPTARG} ;;
-    f) from=${OPTARG} ;; # inclusive
-    t) to=${OPTARG} ;;   # exclusive
-    s) server=${OPTARG} ;;
-    esac
-  done
+  server=$1
+  project=$2
+  from=$3
+  to=$4
 
   gitlab_graphql_url=$server/api/graphql
 
-  has_next_page=false
+  has_next_page=true
   end_cursor=
 
   while $has_next_page; do
@@ -109,6 +105,7 @@ main() {
         echo -e "======= End =======\n"
       done
     else
+      has_next_page=false
       echo "No pipeline found within this period $from - $to"
     fi
 
@@ -116,4 +113,14 @@ main() {
   done
 }
 
-main
+# get inputs
+while getopts p:f:t:s: flag; do
+  case "${flag}" in
+  p) project=${OPTARG} ;;
+  f) from=${OPTARG} ;; # inclusive
+  t) to=${OPTARG} ;;   # exclusive
+  s) server=${OPTARG} ;;
+  esac
+done
+
+main $server $project $from $to
